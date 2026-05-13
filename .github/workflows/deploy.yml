@@ -40,13 +40,4 @@ jobs:
             docker pull ivsantander/database:latest
             docker stop database || true
             docker rm database || true
-            docker run -d \
-              --name database \
-              -p 3306:3306 \
-              -e MYSQL_ROOT_PASSWORD=password123 \
-              -e MYSQL_DATABASE=proyecto_db \
-              -e MYSQL_USER=admin \
-              -e MYSQL_PASSWORD=password123 \
-              -v db-data:/var/lib/mysql \
-              ivsantander/database:latest
-            EOF
+            docker run -d --restart always --name database -p 3306:3306 -e MYSQL_ROOT_PASSWORD=password123 -e MYSQL_DATABASE=proyecto_db -e MYSQL_USER=admin -e MYSQL_PASSWORD=password123 -v db-data:/var/lib/mysql ivsantander/database:latest
