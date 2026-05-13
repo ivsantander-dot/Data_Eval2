@@ -1,0 +1,52 @@
+name: Deploy Database
+
+on:
+  push:
+    branches: [ deploy ]      # se activa solo cuando haces push a la rama deploy
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Descarga el código del repo
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      # 2. Inicia sesión en Docker Hub con los secrets
+      - name: Login a Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 3. Construye la imagen y la sube a Docker Hub
+      - name: Build y push imagen
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ivsantander/database:latest
+
+      # 4. Se conecta a la EC2 del frontend y salta a la EC2 de la base de datos
+      - name: Deploy en EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            ssh -i ~/key-evaluacion.pem ec2-user@ip-10-0-129-87.ec2.internal << 'EOF'
+            docker pull ivsantander/database:latest
+            docker stop database || true
+            docker rm database || true
+            docker run -d \
+              --name database \
+              -p 3306:3306 \
+              -e MYSQL_ROOT_PASSWORD=password123 \
+              -e MYSQL_DATABASE=proyecto_db \
+              -e MYSQL_USER=admin \
+              -e MYSQL_PASSWORD=password123 \
+              -v db-data:/var/lib/mysql \
+              ivsantander/database:latest
+            EOF
