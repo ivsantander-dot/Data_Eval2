@@ -33,10 +33,10 @@ jobs:
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
+          username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            ssh -i ~/innovatech-key.pem ec2-user@ip-10-0-129-87.ec2.internal << 'EOF'
+            ssh -i ~/innovatech-key.pem ${{ secrets.EC2_USER }}@ip-10-0-129-87.ec2.internal << 'EOF'
             docker pull ivsantander/database:latest
             docker stop database || true
             docker rm database || true
