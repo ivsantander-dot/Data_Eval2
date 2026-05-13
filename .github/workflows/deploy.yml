@@ -36,7 +36,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            ssh -i ~/key-evaluacion.pem ec2-user@ip-10-0-129-87.ec2.internal << 'EOF'
+            ssh -i ~/innovatech-key.pem ec2-user@ip-10-0-129-87.ec2.internal << 'EOF'
             docker pull ivsantander/database:latest
             docker stop database || true
             docker rm database || true
